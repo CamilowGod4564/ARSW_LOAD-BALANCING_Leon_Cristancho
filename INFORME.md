@@ -5,7 +5,6 @@
 
 **Escenario de calidad.** Cuando un conjunto de usuarios consulta un enésimo número de Fibonacci superior a 1.000.000 de forma concurrente y el sistema está en condiciones normales, **todas las peticiones deben responderse y el consumo de CPU no puede superar el 70 %**.
 
-**Qué se construyó.** Una *Function App* en Azure (plan Consumo flexible, Node.js 24 LTS) con dos funciones HTTP del proyecto [`FunctionProject`](FunctionProject):
 
 | Función | Código | Enfoque                                          |
 |---|---|--------------------------------------------------|
@@ -27,7 +26,7 @@ Al crear la aplicación de funciones, Azure pide elegir un plan de hospedaje. Se
 
 ![p3](images/Solution/p3.png)
 
-*Pestaña *Storage*: Azure crea una cuenta de almacenamiento nueva, `rglabfibonaccia440`, junto con la aplicación (ver [por qué hace falta](#por-qué-es-necesario-crear-un-storage-account-junto-con-una-function-app)). El diagnóstico del servicio Blob se deja para configurar más adelante.*
+*Pestaña *Storage*: Azure crea una cuenta de almacenamiento nueva, `rglabfibonaccia440`, junto con la aplicación. El diagnóstico del servicio Blob se deja para configurar más adelante.*
 
 ![p4](images/Solution/p4.png)
 
@@ -35,7 +34,7 @@ Al crear la aplicación de funciones, Azure pide elegir un plan de hospedaje. Se
 
 ![p5](images/Solution/p5.png)
 
-*La implementación `Microsoft.Web-FunctionApp-Portal-49b21948-a187` se completó (inicio: 5/11/2026, 9:16:46 p. m.). Creó, entre otros, el sitio `labfibonacci-AppFunction`, dos recursos de Application Insights, la cuenta de almacenamiento, el plan `ASP-rglabfibonacci-9b38` y el espacio de trabajo de supervisión.*
+*La implementación `Microsoft.Web-FunctionApp-Portal-49b21948-a187` se completó. Creó, entre otros, el sitio `labfibonacci-AppFunction`, dos recursos de Application Insights, la cuenta de almacenamiento, el plan `ASP-rglabfibonacci-9b38` y el espacio de trabajo de supervisión.*
 
 ## 2. Instalar las extensiones en Visual Studio Code
 
@@ -43,7 +42,7 @@ Al crear la aplicación de funciones, Azure pide elegir un plan de hospedaje. Se
 
 ![p6](images/Solution/p6.png)
 
-*Extensión **Azure Functions** de Microsoft en el Marketplace de VS Code, ya instalada (aparecen los botones *Disable* y *Uninstall*).*
+*Extensión **Azure Functions** de Microsoft en el Marketplace de VS Code, ya instalada.*
 
 ![p7](images/Solution/p7.png)
 
@@ -51,7 +50,7 @@ Al crear la aplicación de funciones, Azure pide elegir un plan de hospedaje. Se
 
 ![p8](images/Solution/p8.png)
 
-*Con las extensiones instaladas aparece el panel de Azure. En *Resources* se ve la suscripción *Azure for Students*, y en *Workspace* el proyecto local `ARSW_LOAD-BALANCING_Leon_Cristancho` (el editor muestra la rama `develop`).*
+*Con las extensiones instaladas aparece el panel de Azure. En *Resources* se ve la suscripción *Azure for Students*, y en *Workspace* el proyecto local `ARSW_LOAD-BALANCING_Leon_Cristancho`.*
 
 ## 3. Desplegar la función desde VS Code
 
@@ -59,15 +58,15 @@ Al crear la aplicación de funciones, Azure pide elegir un plan de hospedaje. Se
 
 ![p9](images/Solution/p9.png)
 
-*Despliegue sobre `labfibonacci-AppFunction`: el panel *Azure* muestra *Zip and deploy workspace* completado y *Build app* en curso en Azure (a los 31 s). En el árbol, la Function App ya aparece con sus nodos *Functions*, *Identity*, *Application Settings* y *Files*.*
+*Despliegue sobre `labfibonacci-AppFunction`: el panel *Azure* muestra *Zip and deploy workspace* completado y *Build app* en curso en Azure. En el árbol, la Function App ya aparece con sus nodos *Functions*, *Identity*, *Application Settings* y *Files*.*
 
 ![p10](images/Solution/p10.png)
 
-*Salida de las tareas previas al despliegue. `func extensions install` terminó con código de salida 1, y luego `npm install` se ejecutó bien (*added 1 package, found 0 vulnerabilities*; la advertencia *old lockfile* solo indica que `package-lock.json` es de una versión antigua de npm).*
+*Salida de las tareas previas al despliegue. `func extensions install` terminó con código de salida 1, y luego `npm install` se ejecutó bien.*
 
 ![p11](images/Solution/p11.png)
 
-*Ajuste en [`host.json`](FunctionProject/host.json): se fija el rango del *extension bundle* en `"[4.*, 5.0.0)"` (archivo marcado como modificado en el editor).*
+*Ajuste en [`host.json`](FunctionProject/host.json): se fija el rango del *extension bundle* en `"[4.*, 5.0.0)"`.*
 
 ## 4. Probar la función en el portal
 
@@ -91,17 +90,17 @@ Al crear la aplicación de funciones, Azure pide elegir un plan de hospedaje. Se
 
 ## 5. Pruebas de carga concurrente
 
-**Paso 5 del lab.** El lab sugiere Newman; en este caso las 10 peticiones concurrentes se lanzaron con el script [`test.js`](FunctionProject/test.js), que usa `fetch` de Node.js y dispara 10 peticiones `POST` a la vez contra `/api/Fibonacci`, midiendo el tiempo de cada una.
+**Paso 5 del lab.** El lab sugiere Newman; en este caso las 10 peticiones concurrentes se lanzaron con el script `test.js`, que usa `fetch` de Node.js y dispara 10 peticiones `POST` a la vez contra `/api/Fibonacci`, midiendo el tiempo de cada una.
 
 ![p16](images/Solution/p16.png)
 
-*El script en VS Code: arranca 10 llamadas a `hacerPeticion(i)` sin esperar entre ellas (concurrentes) y registra estado HTTP y tiempo. En esta captura el cuerpo de la petición es `{ nth: 10 }`.*
+*El script en VS Code: arranca 10 llamadas a `hacerPeticion(i)` sin esperar entre ellas y registra estado HTTP y tiempo. En esta captura el cuerpo de la petición es `{ nth: 10 }`.*
 
 ### 5.1 Con n = 10
 
 ![p17](images/Solution/p17.png)
 
-*Ejecución con `node test.js` y `nth: 10`: las 10 peticiones responden **200** en un rango de **665 ms a 700 ms**. Es un tiempo casi constante, dominado por la latencia de red y el procesamiento de la plataforma, no por el cálculo (en el portal la misma función tardó 16 ms, ver [p15](#4-probar-la-función-en-el-portal)).*
+*Ejecución con `node test.js` y `nth: 10`: las 10 peticiones responden **200** en un rango de **665 ms a 700 ms**. Es un tiempo casi constante, dominado por la latencia de red y el procesamiento de la plataforma, no por el cálculo (en el portal la misma función tardó 16 ms).*
 
 ### 5.2 Con n = 1.000.000
 
@@ -142,19 +141,19 @@ Al crear la aplicación de funciones, Azure pide elegir un plan de hospedaje. Se
 ## 7. Preguntas del laboratorio
 
 ### ¿Qué es una Azure Function?
-Es el servicio de cómputo **basado en eventos** de Azure: se escribe una función pequeña que se ejecuta cuando ocurre un *desencadenador* (*trigger*), por ejemplo una petición HTTP, un mensaje en una cola o un temporizador, y puede tener *bindings* de entrada y salida. Aquí se usaron dos funciones con desencadenador HTTP (p20) y `function.json` define su `httpTrigger` y su salida `http`.
+Es el servicio de cómputo **basado en eventos** de Azure: se escribe una función pequeña que se ejecuta cuando ocurre un *desencadenador* (*trigger*), por ejemplo una petición HTTP, un mensaje en una cola o un temporizador, y puede tener *bindings* de entrada y salida. Aquí se usaron dos funciones con desencadenador HTTP y `function.json` define su `httpTrigger` y su salida `http`.
 
 ### ¿Qué es serverless?
-Es un modelo en el que el desarrollador no administra servidores: la plataforma aprovisiona, escala (incluso a cero) y parchea la infraestructura, y se paga por el uso (ejecuciones y recursos consumidos), no por máquinas encendidas. Siguen existiendo servidores, pero los gestiona Azure. En este lab, la Function App no requirió crear ni configurar VMs, un balanceador ni reglas de red, a diferencia del laboratorio con máquinas virtuales.
+Es un modelo en el que el desarrollador no administra servidores: la plataforma aprovisiona, escala (incluso a cero) y parchea la infraestructura, y se paga por el uso, no por máquinas encendidas. Siguen existiendo servidores, pero los gestiona Azure. En este lab, la Function App no requirió crear ni configurar VMs, un balanceador ni reglas de red, a diferencia del laboratorio con máquinas virtuales.
 
 ### ¿Qué es el runtime y qué implica seleccionarlo al crear la Function App?
-Es el entorno donde corre el código: el **host de Azure Functions** (versión 4, ver p12) más la **pila del lenguaje** elegida (aquí **Node.js 24 LTS**, p2). Al elegirlo se define qué lenguaje y versión se podrán usar, el sistema operativo (en Consumo flexible, Linux), qué características están disponibles y el soporte de actualizaciones. Todas las funciones de la app comparten esa pila: no se puede mezclar, por ejemplo, Node.js y Python en la misma Function App.
+Es el entorno donde corre el código: el **host de Azure Functions**  más la **pila del lenguaje** elegida. Al elegirlo se define qué lenguaje y versión se podrán usar, el sistema operativo (en Consumo flexible, Linux), qué características están disponibles y el soporte de actualizaciones. Todas las funciones de la app comparten esa pila: no se puede mezclar, por ejemplo, Node.js y Python en la misma Function App.
 
 ### ¿Por qué es necesario crear un Storage Account junto con una Function App?
-Porque el runtime de Functions usa Azure Storage para su funcionamiento interno: guardar los **paquetes de código desplegados**, las **claves** de acceso (por ejemplo la clave `_master` de p14), coordinar el escalado y los desencadenadores basados en eventos, y llevar el registro del estado (por ejemplo en Durable Functions). En la implementación se ve que se crea la cuenta `rglabfibonaccia440` y una plantilla de contenedor de blobs (`StorageBlobContainerTemplate`, p5).
+Porque el runtime de Functions usa Azure Storage para su funcionamiento interno: guardar los **paquetes de código desplegados**, las **claves** de acceso, coordinar el escalado y los desencadenadores basados en eventos, y llevar el registro del estado (por ejemplo en Durable Functions). En la implementación se ve que se crea la cuenta `rglabfibonaccia440` y una plantilla de contenedor de blobs.
 
 ### Planes de una Function App
-Los planes que ofrece el portal (p1) y sus diferencias principales:
+Los planes que ofrece el portal y sus diferencias principales:
 
 | Plan | Escala a cero | Redes virtuales | Escala horizontal máx. (p1) | Ventajas | Desventajas |
 |---|---|---|---|---|---|
@@ -164,12 +163,11 @@ Los planes que ofrece el portal (p1) y sus diferencias principales:
 | **Container Apps** | Sí | Sí | 300 | Control total de la imagen del contenedor, GPU | Solo contenedores Linux |
 | **Consumo (Windows)** | Sí | No | 200 | Pago por ejecución | Plan heredado, con arranques en frío y sin VNet |
 
-Las columnas de escala, redes virtuales y escala a cero salen de la comparación del portal (p1). Las ventajas y desventajas se resumen de la [documentación de Azure sobre opciones de hospedaje](https://learn.microsoft.com/azure/azure-functions/functions-scale).
 
 ### ¿Por qué la memoization falla o no funciona de forma correcta?
-Con las capturas de p21 la memoization **sí funciona** dentro de una misma instancia (32 ms frente a 5 ms). Falla o pierde efecto por varias razones, que se ven en el propio código de [`FibonacciMemo/index.js`](FunctionProject/FibonacciMemo/index.js):
+Con las capturas del informe, la memoization **sí funciona** dentro de una misma instancia (32 ms frente a 5 ms). Falla o pierde efecto por varias razones.
 
-1. **El estado vive en la memoria de una instancia, no en la función.** `memo` es una variable global del proceso. Si la plataforma escala a **varias instancias** (cada una con su `memo` vacío) o **reinicia o recicla** la instancia, o la **escala a cero** tras un tiempo sin uso, la caché se pierde y hay que recalcular. En una arquitectura serverless las funciones deben considerarse sin estado; para compartir caché haría falta un servicio externo (por ejemplo Redis o una tabla).
+1. **El estado vive en la memoria de una instancia, no en la función.** `memo` es una variable global del proceso. Si la plataforma escala a **varias instancias** (cada una con su `memo` vacío) o **reinicia o recicla** la instancia, o la **escala a cero** tras un tiempo sin uso, la caché se pierde y hay que recalcular. En una arquitectura serverless las funciones deben considerarse sin estado; para compartir caché haría falta un servicio externo.
 2. **No sirve para valores grandes.** El enfoque recursivo agota la pila de llamadas con `n` del orden de miles, mucho antes de 1.000.000 (se capturaría como error 500), así que no resuelve el caso del escenario de calidad.
 3. **Pierde precisión.** Usa `Number` de JavaScript, no `big-integer`: los resultados dejan de ser exactos a partir de F(79) (que supera 2^53) y se vuelven `Infinity` pasando de F(1476). La función `Fibonacci` iterativa sí usa `big-integer`.
 4. **No ayuda a la concurrencia.** Las peticiones concurrentes siguen compitiendo por el mismo hilo; la caché solo ayuda con valores ya calculados en esa instancia.
@@ -179,7 +177,6 @@ Depende del plan. En **Consumo flexible**, el usado aquí, cada instancia se fac
 - **Bajo demanda:** se paga la **memoria provisionada (GB-segundo) mientras la instancia ejecuta funciones activamente** y el **número de ejecuciones**, con una concesión gratuita mensual de ambas. No hay costo si no hay ejecuciones. El tiempo mínimo facturable por ejecución es 1.000 ms y luego se redondea a múltiplos de 100 ms.
 - ***Always Ready*:** se paga además la memoria base de las instancias que se mantienen siempre listas (sin concesión gratuita), a cambio de evitar el arranque en frío.
 
-El tamaño de instancia elegido (2048 MB en p2) multiplica los GB-segundo consumidos. Los precios y la concesión gratuita vigentes están en la [página de precios de Azure Functions](https://azure.microsoft.com/pricing/details/functions/#pricing). En **Premium** se paga por núcleo y memoria de las instancias activas (siempre hay al menos una), y en **App Service** por las instancias aprovisionadas, estén ocupadas o no. Fuente: [documentación del plan Consumo flexible](https://learn.microsoft.com/azure/azure-functions/flex-consumption-plan).
 
 
 ---
